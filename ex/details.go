@@ -1,17 +1,48 @@
 package ex
 
 import (
-	"io"
+	"fmt"
 	"log"
 	"net/http"
-	"os"
+	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
-func viewProperty(url string) {
-	respPid, err := http.Get(url)
+func viewProperty(url, id string) {
+	fullURL := fmt.Sprintf("%s%s", url, id)
+	resp, err := http.Get(fullURL)
 	if err != nil {
 		log.Fatalf("error while loading the property :: %v", err)
 	}
-	defer respPid.Body.Close()
-	io.Copy(os.Stdout, respPid.Body)
+	doc, err := goquery.NewDocumentFromResponse(resp)
+	if err != nil {
+		log.Fatalf("unable to view property :: %v", err)
+	}
+	checkAndUpdate(id, fullURL, doc)
+}
+
+func price(doc *goquery.Document) string {
+	var price string
+	doc.Find("#price_overlay").Each(func(arg1 int, elm *goquery.Selection) {
+		price = elm.Text()
+	})
+	return strings.TrimSpace(price)
+}
+
+func status(doc *goquery.Document) string {
+	var status string
+	doc.Find(".overlay-text").Each(func(arg1 int, elm *goquery.Selection) {
+		status = strings.Replace(elm.Text(), "\n", "", -1)
+	})
+	return strings.TrimSpace(status)
+}
+
+func name(doc *goquery.Document) string {
+	var name string
+	doc.Find("#property_heading").Each(func(arg1 int, elm *goquery.Selection) {
+		h1 := elm.Find("h1")
+		name = strings.Replace(h1.Text(), "\n", "", -1)
+	})
+	return strings.Trim(name, "")
 }

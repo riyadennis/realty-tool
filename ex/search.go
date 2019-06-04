@@ -1,6 +1,7 @@
 package ex
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -41,7 +42,8 @@ func Search(urls []URL) {
 		document := propertyList(u.Search)
 		ids := propertyIds(document)
 		for _, id := range ids {
-			viewProperty(u.View + id)
+			viewProperty(u.View, id)
+			fmt.Println("*********************")
 		}
 	}
 }
