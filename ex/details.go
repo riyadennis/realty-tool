@@ -7,9 +7,10 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/riyadennis/realty-tool/internal"
 )
 
-func viewProperty(url, id string) {
+func viewProperty(url, id string) *internal.PropertyRecord {
 	fullURL := fmt.Sprintf("%s%s", url, id)
 	resp, err := http.Get(fullURL)
 	if err != nil {
@@ -19,7 +20,7 @@ func viewProperty(url, id string) {
 	if err != nil {
 		log.Fatalf("unable to view property :: %v", err)
 	}
-	checkAndUpdate(id, fullURL, doc)
+	return checkAndUpdate(id, fullURL, doc)
 }
 
 func price(doc *goquery.Document) string {

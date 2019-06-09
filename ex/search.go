@@ -38,13 +38,23 @@ func GetURLS(path string) *Config {
 
 // Search will run a search on the urls from config
 func Search(urls []URL) {
-	for _, u := range urls {
-		document := propertyList(u.Search)
-		ids := propertyIds(document)
-		for _, id := range ids {
-			viewProperty(u.View, id)
-			fmt.Println("*********************")
-		}
+	url := urls[0]
+	document := propertyList(url.Search)
+	ids := propertyIds(document)
+	for _, id := range ids {
+		pa := viewProperty(url.View, id)
+		fmt.Printf("%v\n \n", pa)
+	}
+}
+
+// SearchSecond will run a search on the urls from config
+func SearchSecond(urls []URL) {
+	url := urls[1]
+	document := propertyList(url.Search)
+	ids := propertyIds(document)
+	for _, id := range ids {
+		pa := viewProperty(url.View, id)
+		fmt.Printf("%v\n \n", pa)
 	}
 }
 
