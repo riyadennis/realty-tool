@@ -3,42 +3,50 @@ package ex
 import (
 	"log"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/riyadennis/realty-tool/internal"
 )
 
-func checkAndUpdate(id, fullURL string, doc *goquery.Document) *internal.PropertyRecord {
-	price := price(doc)
-	status := status(doc)
-	name := name(doc)
-	p, err := internal.GetData(id)
+type propertyRecord struct {
+	id     string
+	url    string
+	price  string
+	status string
+	name   string
+}
+
+func (pr *propertyRecord) checkAndUpdate() *internal.PropertyRecord {
+	err := internal.Init()
+	if err != nil {
+		panic(err)
+	}
+	p, err := internal.GetData(pr.id)
 	if err != nil {
 		log.Fatalf("unable to fetch :: %v", err)
 	}
 	// if its a new property save
 	if p == nil {
 		p = &internal.PropertyRecord{
-			ID:     id,
-			Name:   name,
-			Price:  price,
-			Status: status,
-			URL:    fullURL,
+			ID:     pr.id,
+			Name:   pr.name,
+			Price:  pr.price,
+			Status: pr.status,
+			URL:    pr.url,
 		}
 		p.SavePayload()
 		return p
 	}
-	p.Name = name
-	p.Status = status
-	if p.Price != price {
-		p.Price = price
-		err := internal.UpdatePrice(id, price)
+	p.Name = pr.name
+	p.Status = pr.status
+	if p.Price != pr.price {
+		p.Price = pr.price
+		err := internal.UpdatePrice(pr.id, pr.price)
 		if err != nil {
 			log.Fatalf("unable to update price :: %v", err)
 		}
 	}
-	if p.Status != status {
-		p.Status = status
-		err := internal.UpdateStatus(id, status)
+	if p.Status != pr.status {
+		p.Status = pr.status
+		err := internal.UpdateStatus(pr.id, pr.status)
 		if err != nil {
 			log.Fatalf("unable to update price :: %v", err)
 		}

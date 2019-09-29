@@ -38,23 +38,17 @@ func GetURLS(path string) *Config {
 
 // Search will run a search on the urls from config
 func Search(urls []URL) {
-	url := urls[0]
-	document := propertyList(url.Search)
-	ids := propertyIds(document)
-	for _, id := range ids {
-		pa := viewProperty(url.View, id)
-		fmt.Printf("%v\n \n", pa)
+	rDocument := propertyList(urls[1].Search)
+	rIds := propertyIdsRightMove(rDocument)
+	for _, id := range rIds {
+		property(urls[1].View, id)
 	}
-}
 
-// SearchSecond will run a search on the urls from config
-func SearchSecond(urls []URL) {
-	url := urls[1]
-	document := propertyList(url.Search)
-	ids := propertyIds(document)
-	for _, id := range ids {
-		pa := viewProperty(url.View, id)
-		fmt.Printf("%v\n \n", pa)
+	wDocument := propertyList(urls[0].Search)
+	wIds := propertyIdsWoodBury(wDocument)
+	fmt.Printf("%v", wIds)
+	for _, id := range wIds {
+		property(urls[0].View, id)
 	}
 }
 
@@ -65,7 +59,7 @@ func propertyList(url string) *goquery.Document {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("invalid status code %v", resp.StatusCode)
+		log.Fatalf("unable to perform thr searchs %v", resp.StatusCode)
 	}
 	document, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
@@ -74,16 +68,32 @@ func propertyList(url string) *goquery.Document {
 	return document
 }
 
-func propertyIds(doc *goquery.Document) map[string]string {
+func propertyIdsWoodBury(doc *goquery.Document) map[string]string {
 	pids := make(map[string]string, 1)
 	doc.Find("a").Each(func(index int, el *goquery.Selection) {
 		href, exists := el.Attr("href")
 		if exists {
 			if index := strings.Index(href, "pid="); index > 0 {
-				id := href[22 : 22+8]
+				id := href[22:30]
 				// check if id is already populated or not
 				if ok := pids[id]; ok == "" {
 					pids[id] = id
+				}
+			}
+		}
+	})
+	return pids
+}
+func propertyIdsRightMove(doc *goquery.Document) map[string]string {
+	pids := make(map[string]string, 1)
+	doc.Find("div").Each(func(index int, el *goquery.Selection) {
+		idStr, exists := el.Attr("id")
+		if exists {
+			index := strings.Index(idStr, "property-")
+			if index >= 0 {
+				id := idStr[9:17]
+				if ok := pids[id]; ok == "" {
+					pids[id] = fmt.Sprintf("%s.html", id)
 				}
 			}
 		}
