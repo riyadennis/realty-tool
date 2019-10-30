@@ -13,7 +13,6 @@ var db *sql.DB
 func Init() error {
 	var err error
 	db, err = InitDB()
-	defer db.Close()
 	if err != nil {
 		return err
 	}

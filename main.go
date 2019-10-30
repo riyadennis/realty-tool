@@ -9,5 +9,14 @@ import (
 
 func main() {
 	urls := ex.GetURLS("config.yaml")
-	ex.Search(urls.Urls)
+	if urls != nil {
+		records := ex.Search(urls.Urls)
+		if len(records) == 0 {
+			panic("no records")
+		}
+		err := ex.CheckAndUpdate(records)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
