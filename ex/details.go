@@ -20,21 +20,27 @@ func property(url, id string) *internal.PropertyRecord {
 	resp, err := http.Get(fullURL)
 	if err != nil {
 		log.Fatalf("error while loading the property :: %v", err)
+		return nil
 	}
 	doc, err := goquery.NewDocumentFromResponse(resp)
 	if err != nil {
 		log.Fatalf("unable to view property :: %v", err)
+		return nil
 	}
 	re := regexp.MustCompile("[0-9]+")
-	p := propertyRecord{
-		id:     re.FindAllString(id, -1)[0],
-		url:    fullURL,
-		price:  price(doc),
-		status: status(doc),
-		name:   name(doc),
+	n := name(doc)
+	p := price(doc)
+	s := status(doc)
+	if n == "" || p == "" || s == "" {
+		return nil
 	}
-	fmt.Printf("url : %s, price : %v\n", fullURL, p)
-	return p.checkAndUpdate()
+	return &internal.PropertyRecord{
+		ID:     re.FindAllString(id, -1)[0],
+		URL:    fullURL,
+		Price:  price(doc),
+		Status: status(doc),
+		Name:   n,
+	}
 }
 
 func price(doc *goquery.Document) string {

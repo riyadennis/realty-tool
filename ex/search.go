@@ -9,6 +9,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"gopkg.in/yaml.v2"
+
+	"github.com/riyadennis/realty-tool/internal"
 )
 
 // Config contains the url strings which we need to search
@@ -27,29 +29,39 @@ func GetURLS(path string) *Config {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatalf("unable to open config file :: %v", err)
+		return nil
 	}
 	cnf := &Config{}
 	err = yaml.Unmarshal(file, cnf)
 	if err != nil {
 		log.Fatalf("invalid yaml :: %v", err)
+		return nil
 	}
 	return cnf
 }
 
 // Search will run a search on the urls from config
-func Search(urls []URL) {
+func Search(urls []URL) []*internal.PropertyRecord {
+	var records []*internal.PropertyRecord
+
 	rDocument := propertyList(urls[1].Search)
 	rIds := propertyIdsRightMove(rDocument)
 	for _, id := range rIds {
-		property(urls[1].View, id)
+		p := property(urls[1].View, id)
+		if p != nil {
+			records = append(records, p)
+		}
 	}
 
 	wDocument := propertyList(urls[0].Search)
 	wIds := propertyIdsWoodBury(wDocument)
-	fmt.Printf("%v", wIds)
 	for _, id := range wIds {
-		property(urls[0].View, id)
+		p := property(urls[0].View, id)
+		if p != nil {
+			records = append(records, p)
+		}
 	}
+	return records
 }
 
 func propertyList(url string) *goquery.Document {

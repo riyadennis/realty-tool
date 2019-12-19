@@ -16,12 +16,6 @@ type PropertyRecord struct {
 
 // SavePayload saves information about individual properties
 func (pr *PropertyRecord) SavePayload() error {
-	db, err := InitDB()
-	defer db.Close()
-	if err != nil {
-		logrus.Errorf("Unable to save payload %s", err.Error())
-		return err
-	}
 	query, err := db.Prepare("INSERT INTO property_data(id,price,name,url,status,InsertedDatetime) VALUES(?, ?, ?, ?,?,?)")
 	if err != nil {
 		logrus.Errorf("Unable to save payload %s", err.Error())
@@ -37,12 +31,6 @@ func (pr *PropertyRecord) SavePayload() error {
 
 // UpdatePrice saves information about individual properties
 func UpdatePrice(id, price string) error {
-	db, err := InitDB()
-	defer db.Close()
-	if err != nil {
-		logrus.Errorf("Unable to update payload %s", err.Error())
-		return err
-	}
 	query, err := db.Prepare("UPDATE property_data SET new_price = ?, price_updated= ? WHERE id = ?")
 	if err != nil {
 		logrus.Errorf("Unable to update payload %s", err.Error())
@@ -58,12 +46,6 @@ func UpdatePrice(id, price string) error {
 
 // UpdateStatus saves information about individual properties
 func UpdateStatus(id, status string) error {
-	db, err := InitDB()
-	defer db.Close()
-	if err != nil {
-		logrus.Errorf("Unable to update payload %s", err.Error())
-		return err
-	}
 	query, err := db.Prepare("UPDATE property_data SET status = ?,status_updated= ? WHERE id = ?")
 	if err != nil {
 		logrus.Errorf("Unable to update payload %s", err.Error())
@@ -77,23 +59,14 @@ func UpdateStatus(id, status string) error {
 	return nil
 }
 
-func GetData(id string) (*PropertyRecord, error) {
+// Property gets the details of the from the database as per the id.
+func Property(id string) (*PropertyRecord, error) {
 	var price, status string
-	db, err := InitDB()
-	defer db.Close()
-	if err != nil {
-		logrus.Errorf("Unable to get data from db %s", err.Error())
-		return nil, err
-	}
 	query := "SELECT price, status from property_data where id = '" + id + "'"
 	row := db.QueryRow(query)
-	err = row.Scan(&price, &status)
+	err := row.Scan(&price, &status)
 	if err != nil {
-		logrus.Errorf("Unable to get  details %s", err.Error())
 		return nil, nil
 	}
-	if price != "" {
-		return &PropertyRecord{Price: price, Status: status}, nil
-	}
-	return nil, nil
+	return &PropertyRecord{Price: price, Status: status}, nil
 }

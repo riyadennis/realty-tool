@@ -14,42 +14,41 @@ type propertyRecord struct {
 	name   string
 }
 
-func (pr *propertyRecord) checkAndUpdate() *internal.PropertyRecord {
+func CheckAndUpdate(record []*internal.PropertyRecord) error {
 	err := internal.Init()
 	if err != nil {
-		panic(err)
+		log.Fatalf("unable to  initialise :: %v", err)
+		return err
 	}
-	p, err := internal.GetData(pr.id)
-	if err != nil {
-		log.Fatalf("unable to fetch :: %v", err)
-	}
-	// if its a new property save
-	if p == nil {
-		p = &internal.PropertyRecord{
-			ID:     pr.id,
-			Name:   pr.name,
-			Price:  pr.price,
-			Status: pr.status,
-			URL:    pr.url,
-		}
-		p.SavePayload()
-		return p
-	}
-	p.Name = pr.name
-	p.Status = pr.status
-	if p.Price != pr.price {
-		p.Price = pr.price
-		err := internal.UpdatePrice(pr.id, pr.price)
+	for _, pr := range record {
+		p, err := internal.Property(pr.ID)
 		if err != nil {
-			log.Fatalf("unable to update price :: %v", err)
+			log.Fatalf("unable to fetch :: %v", err)
+			continue
+		}
+		// if its a new property save
+		if p == nil {
+			pr.SavePayload()
+		}
+		if pr == nil {
+			continue
+		}
+		if p.Price != pr.Price {
+			p.Price = pr.Price
+			err := internal.UpdatePrice(pr.ID, pr.Price)
+			if err != nil {
+				log.Fatalf("unable to update price :: %v", err)
+				return err
+			}
+		}
+		if p.Status != pr.Status {
+			p.Status = pr.Status
+			err := internal.UpdateStatus(pr.ID, pr.Status)
+			if err != nil {
+				log.Fatalf("unable to update price :: %v", err)
+				return err
+			}
 		}
 	}
-	if p.Status != pr.status {
-		p.Status = pr.status
-		err := internal.UpdateStatus(pr.id, pr.status)
-		if err != nil {
-			log.Fatalf("unable to update price :: %v", err)
-		}
-	}
-	return p
+	return nil
 }
