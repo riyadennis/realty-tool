@@ -25,26 +25,26 @@ type URL struct {
 }
 
 //GetURLS gets all the urls that is in the config file to search
-func GetURLS(path string) *Config {
+func GetURLS(logger *log.Logger, path string) *Config {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Fatalf("unable to open config file :: %v", err)
+		logger.Fatalf("unable to open config file :: %v", err)
 		return nil
 	}
 	cnf := &Config{}
 	err = yaml.Unmarshal(file, cnf)
 	if err != nil {
-		log.Fatalf("invalid yaml :: %v", err)
+		logger.Fatalf("invalid yaml :: %v", err)
 		return nil
 	}
 	return cnf
 }
 
 // Search will run a search on the urls from config
-func Search(urls []URL) []*internal.PropertyRecord {
+func Search(logger *log.Logger, urls []URL) []*internal.PropertyRecord {
 	var records []*internal.PropertyRecord
 
-	rDocument := propertyList(urls[1].Search)
+	rDocument := propertyList(logger, urls[1].Search)
 	rIds := propertyIdsRightMove(rDocument)
 	for _, id := range rIds {
 		p := property(urls[1].View, id)
@@ -53,7 +53,7 @@ func Search(urls []URL) []*internal.PropertyRecord {
 		}
 	}
 
-	wDocument := propertyList(urls[0].Search)
+	wDocument := propertyList(logger, urls[0].Search)
 	wIds := propertyIdsWoodBury(wDocument)
 	for _, id := range wIds {
 		p := property(urls[0].View, id)
@@ -64,18 +64,18 @@ func Search(urls []URL) []*internal.PropertyRecord {
 	return records
 }
 
-func propertyList(url string) *goquery.Document {
+func propertyList(logger *log.Logger, url string) *goquery.Document {
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("error in accessing the site %v", err)
+		logger.Fatalf("error in accessing the site %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("unable to perform thr searchs %v", resp.StatusCode)
+		logger.Fatalf("unable to perform thr searchs %v", resp.StatusCode)
 	}
 	document, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		log.Fatalf("unable to read the content %v", err)
+		logger.Fatalf("unable to read the content %v", err)
 	}
 	return document
 }

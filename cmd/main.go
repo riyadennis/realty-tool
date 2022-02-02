@@ -12,9 +12,11 @@ import (
 )
 
 func main() {
-	urls := scrape.GetURLS("config.yaml")
+	logger := log.New(os.Stdout, "LOADER: ", log.LstdFlags|log.Lmicroseconds|log.Lshortfile)
+
+	urls := scrape.GetURLS(logger, "config.yaml")
 	if urls != nil {
-		records := scrape.Search(urls.Urls)
+		records := scrape.Search(logger, urls.Urls)
 		if len(records) == 0 {
 			panic("no records")
 		}
@@ -24,7 +26,6 @@ func main() {
 		}
 	}
 
-	logger := log.New(os.Stdout, "LOADER: ", log.LstdFlags|log.Lmicroseconds|log.Lshortfile)
 	loader := &registry.Loader{}
 	err := registry.LoadFromCSV(logger, "data/input.csv", "output.rdf", loader)
 	if err != nil {
