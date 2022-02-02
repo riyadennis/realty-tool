@@ -1,4 +1,4 @@
-package ex
+package scrape
 
 import (
 	"fmt"

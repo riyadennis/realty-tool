@@ -1,0 +1,24 @@
+type PricePaidData {
+    id: ID!
+    dataSourceID: String! @search(by: [hash]) @id
+    property: Property
+}
+
+type Property {
+    id: ID!
+    price: String @search(by: [fulltext])
+    transactionDate: DateTime
+    postcode: String @search(by: [fulltext])
+    address: Address
+}
+
+type Address {
+    id: ID!
+    paon: String @search(by: [fulltext])
+    saon: String @search(by: [fulltext])
+    street: String @search(by: [fulltext])
+    locality: String @search(by: [fulltext])
+    town: String @search(by: [fulltext])
+    district: String @search(by: [fulltext])
+    county: String @search(by: [fulltext])
+}

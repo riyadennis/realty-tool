@@ -8,3 +8,6 @@ build:
 
 setup:
 	go run main.go setup=up
+
+ratel:
+	docker run -p 8000:8000 dgraph/ratel
