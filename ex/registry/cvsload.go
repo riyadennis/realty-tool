@@ -62,7 +62,7 @@ func LoadFromCSV(logger *log.Logger, inputFile, outputFile string, mutationLoade
 				if err != nil {
 					errorChan <- err
 				}
-				logger.Printf("wrote sub query %v", mut)
+				//logger.Printf("wrote sub query %v", mut)
 			}()
 		case err := <-errorChan:
 			// if there is an error in writing one line we print the error and continue

@@ -1,24 +1,34 @@
-type PricePaidData {
-    id: ID!
-    dataSourceID: String! @search(by: [hash]) @id
-    property: Property
-}
-
 type Property {
     id: ID!
-    price: String @search(by: [fulltext])
-    transactionDate: DateTime
-    postcode: String @search(by: [fulltext])
-    address: Address
+    DoorNumber: String @search(by: [fulltext])
+    Postcode: String
+    Neighbourhood: Neighbourhood
+    Area: Area
+    PricePaidData: [PricePaidData]
 }
 
-type Address {
+type PricePaidData {
     id: ID!
-    paon: String @search(by: [fulltext])
-    saon: String @search(by: [fulltext])
-    street: String @search(by: [fulltext])
-    locality: String @search(by: [fulltext])
-    town: String @search(by: [fulltext])
-    district: String @search(by: [fulltext])
-    county: String @search(by: [fulltext])
+    DataSourceID: String! @search(by: [hash]) @id
+    Transactions: [Transaction]
 }
+
+type Transaction{
+    TransactionDate: DateTime
+    Price: String @search(by: [fulltext])
+    Property: Property
+}
+
+type Area {
+    Locality: String @search(by: [fulltext])
+    Town: String @search(by: [fulltext])
+    District: String @search(by: [fulltext])
+    County: String @search(by: [fulltext])
+    OutCode: String
+}
+
+type Neighbourhood{
+    Street: String @search(by: [fulltext])
+    Postcodes: [String] @search(by: [fulltext])
+}
+

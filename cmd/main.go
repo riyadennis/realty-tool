@@ -3,8 +3,7 @@ package main
 import (
 	"log"
 	"os"
-
-	"github.com/riyadennis/realty-tool/ex/scrape"
+	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/golang-migrate/migrate/source/file"
@@ -13,21 +12,13 @@ import (
 
 func main() {
 	logger := log.New(os.Stdout, "LOADER: ", log.LstdFlags|log.Lmicroseconds|log.Lshortfile)
-
-	urls := scrape.GetURLS(logger, "config.yaml")
-	if urls != nil {
-		records := scrape.Search(logger, urls.Urls)
-		if len(records) == 0 {
-			panic("no records")
-		}
-		err := scrape.CheckAndUpdate(records)
-		if err != nil {
-			panic(err)
-		}
+	loader := &registry.Loader{
+		Logger: logger,
+		PricePaidData: sync.Map{},
+		Property: sync.Map{},
+		Area: sync.Map{},
 	}
-
-	loader := &registry.Loader{}
-	err := registry.LoadFromCSV(logger, "data/input.csv", "output.rdf", loader)
+	err := registry.LoadFromCSV(logger, "data/pp-2020.csv", "output.rdf", loader)
 	if err != nil {
 		panic(err)
 	}
