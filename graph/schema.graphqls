@@ -1,0 +1,37 @@
+type PricePaidData {
+  id: ID!
+  DataSourceID: String!
+  Transactions: [Transaction]
+}
+
+type Transaction{
+  TransactionDate: String
+  Price: String
+  Property: Property
+}
+
+type Property {
+  id: ID!
+  DoorNumber: String
+  Postcode: String
+  Neighbourhood: Neighbourhood
+  Area: Area
+  PricePaidData: [PricePaidData]
+}
+
+type Area {
+  Locality: String
+  Town: String
+  District: String
+  County: String
+  OutCode: String
+}
+
+type Neighbourhood{
+  Street: String
+  Postcodes: [String]
+}
+
+type QueryProperty{
+  property(postcode: String!): Property
+}
