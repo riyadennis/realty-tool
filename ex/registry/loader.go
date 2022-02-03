@@ -59,6 +59,7 @@ func (l *Loader) LineToMutation(_ context.Context, _ chan error, record []string
 		ppd *PricePaidData
 		area *Area
 		subMutation string
+
 	)
 	go func(){
 
@@ -81,7 +82,7 @@ func (l *Loader) LineToMutation(_ context.Context, _ chan error, record []string
 			}
 
 			subMutation += fmt.Sprintf(`
-		_:%s <PricePaidData.dataSourceID> %q .
+		_:%s <PricePaidData.DataSourceID> %q .
 		_:%s <dgraph.type> "PricePaidData" .
 	`,
 				ppd.ID,ppd.dataSourceID,
@@ -101,7 +102,7 @@ func (l *Loader) LineToMutation(_ context.Context, _ chan error, record []string
 
 		//ppd.Transactions = append(ppd.Transactions,transaction)
 		subMutation += fmt.Sprintf(`
-		_:%s <Transaction.property> _:%s  (dataSourceID=%q) .
+		_:%s <Transaction.Property> _:%s  (dataSourceID=%q) .
 		_:%s <Transactions.TransactionDate> %q .
 		_:%s <Transaction.Price> %q .
 		_:%s <dgraph.type> "Transaction" .
@@ -114,23 +115,19 @@ func (l *Loader) LineToMutation(_ context.Context, _ chan error, record []string
 			ppd.ID, "trans"+property.ID,
 		)
 
-		dataArea, ok := l.Area.Load(property.Area.OutCode)
-		l.Logger.Printf("dataArea  array: %v", data)
+		dataArea, ok := l.Area.LoadOrStore(property.Area.OutCode, property.Area)
 		if ok && dataArea != nil{
 			area, _ = dataArea.(*Area)
 		}else{
 			area = property.Area
-
 			subMutation += AreaMutation(area)
-			l.Area.Store(property.Area.OutCode, area)
 		}
 
-		dataProperty, ok := l.Property.Load(property.Postcode+property.DoorNumber+property.Neighbourhood.Street)
+		dataProperty, ok := l.Property.LoadOrStore(property.Postcode+property.DoorNumber+property.Neighbourhood.Street, property)
 		if ok && dataProperty != nil{
 			property, _ = dataProperty.(*Property)
 		}else{
 			subMutation += PropertyMutation(property, property.ID)
-			l.Property.Store(property.Postcode+property.DoorNumber+property.Neighbourhood.Street, property)
 		}
 
 		subMutation += fmt.Sprintf(`
