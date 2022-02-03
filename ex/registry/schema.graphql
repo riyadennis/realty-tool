@@ -32,3 +32,6 @@ type Neighbourhood{
     Postcodes: [String] @search(by: [fulltext])
 }
 
+type Query {
+    property(postcode: String!): Property
+}

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -34,6 +35,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Query() QueryResolver
 	Transaction() TransactionResolver
 }
 
@@ -70,10 +72,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-	}
-
-	QueryProperty struct {
-		Property func(childComplexity int, postcode string) int
+		Properties func(childComplexity int) int
 	}
 
 	Transaction struct {
@@ -83,6 +82,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type QueryResolver interface {
+	Properties(ctx context.Context) ([]*model.Property, error)
+}
 type TransactionResolver interface {
 	TransactionDate(ctx context.Context, obj *model.Transaction) (*string, error)
 }
@@ -214,17 +216,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Property.PricePaidData(childComplexity), true
 
-	case "QueryProperty.property":
-		if e.complexity.QueryProperty.Property == nil {
+	case "Query.properties":
+		if e.complexity.Query.Properties == nil {
 			break
 		}
 
-		args, err := ec.field_QueryProperty_property_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.QueryProperty.Property(childComplexity, args["postcode"].(string)), true
+		return e.complexity.Query.Properties(childComplexity), true
 
 	case "Transaction.Price":
 		if e.complexity.Transaction.Price == nil {
@@ -331,8 +328,8 @@ type Neighbourhood{
   Postcodes: [String]
 }
 
-type QueryProperty{
-  property(postcode: String!): Property
+type Query {
+  properties: [Property!]!
 }
 `, BuiltIn: false},
 }
@@ -341,21 +338,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_QueryProperty_property_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["postcode"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postcode"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["postcode"] = arg0
-	return args, nil
-}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -931,6 +913,41 @@ func (ec *executionContext) _Property_PricePaidData(ctx context.Context, field g
 	return ec.marshalOPricePaidData2ᚕᚖgithubᚗcomᚋriyadennisᚋrealtyᚑtoolᚋgraphᚋmodelᚐPricePaidData(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_properties(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Properties(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Property)
+	fc.Result = res
+	return ec.marshalNProperty2ᚕᚖgithubᚗcomᚋriyadennisᚋrealtyᚑtoolᚋgraphᚋmodelᚐPropertyᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1000,45 +1017,6 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _QueryProperty_property(ctx context.Context, field graphql.CollectedField, obj *model.QueryProperty) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "QueryProperty",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_QueryProperty_property_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Property, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Property)
-	fc.Result = res
-	return ec.marshalOProperty2ᚖgithubᚗcomᚋriyadennisᚋrealtyᚑtoolᚋgraphᚋmodelᚐProperty(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Transaction_TransactionDate(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
@@ -2491,6 +2469,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "properties":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_properties(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -2504,34 +2505,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
-
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var queryPropertyImplementors = []string{"QueryProperty"}
-
-func (ec *executionContext) _QueryProperty(ctx context.Context, sel ast.SelectionSet, obj *model.QueryProperty) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, queryPropertyImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("QueryProperty")
-		case "property":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._QueryProperty_property(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -3033,6 +3006,60 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNProperty2ᚕᚖgithubᚗcomᚋriyadennisᚋrealtyᚑtoolᚋgraphᚋmodelᚐPropertyᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Property) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNProperty2ᚖgithubᚗcomᚋriyadennisᚋrealtyᚑtoolᚋgraphᚋmodelᚐProperty(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNProperty2ᚖgithubᚗcomᚋriyadennisᚋrealtyᚑtoolᚋgraphᚋmodelᚐProperty(ctx context.Context, sel ast.SelectionSet, v *model.Property) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Property(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

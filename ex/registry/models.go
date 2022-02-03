@@ -1,4 +1,4 @@
-package model
+package registry
 
 import "time"
 
@@ -36,6 +36,4 @@ type Neighbourhood struct {
 	Street string
 	Postcodes []string
 }
-
-
 

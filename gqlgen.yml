@@ -54,18 +54,23 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+
   Transaction:
     model:
       - github.com/riyadennis/realty-tool/graph/model.Transaction
+
   PricePaidData:
     model:
       - github.com/riyadennis/realty-tool/graph/model.PricePaidData
+
   Property:
     model:
       - github.com/riyadennis/realty-tool/graph/model.Property
+
   Area:
     model:
       - github.com/riyadennis/realty-tool/graph/model.Area
+
   Neighbourhood:
     model:
       - github.com/riyadennis/realty-tool/graph/model.Neighbourhood

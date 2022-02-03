@@ -32,6 +32,6 @@ type Neighbourhood{
   Postcodes: [String]
 }
 
-type QueryProperty{
-  property(postcode: String!): Property
+type Query {
+  properties: [Property!]!
 }
