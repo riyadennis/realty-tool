@@ -1,7 +1,7 @@
 type Property {
     id: ID!
     DoorNumber: String @search(by: [fulltext])
-    Postcode: String
+    Postcode: String @search(by: [fulltext])
     Neighbourhood: Neighbourhood
     Area: Area
     PricePaidData: [PricePaidData]
