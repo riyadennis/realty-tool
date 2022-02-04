@@ -72,7 +72,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Properties         func(childComplexity int) int
+		Properties         func(childComplexity int, postcode string) int
 		TotalArea          func(childComplexity int) int
 		TotalPricePaidData func(childComplexity int) int
 		TotalProperties    func(childComplexity int) int
@@ -91,7 +91,7 @@ type QueryResolver interface {
 	TotalArea(ctx context.Context) (int, error)
 	TotalTransaction(ctx context.Context) (int, error)
 	TotalPricePaidData(ctx context.Context) (int, error)
-	Properties(ctx context.Context) ([]*model.Property, error)
+	Properties(ctx context.Context, postcode string) ([]*model.Property, error)
 }
 type TransactionResolver interface {
 	TransactionDate(ctx context.Context, obj *model.Transaction) (string, error)
@@ -224,12 +224,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Property.PricePaidData(childComplexity), true
 
-	case "Query.properties":
+	case "Query.Properties":
 		if e.complexity.Query.Properties == nil {
 			break
 		}
 
-		return e.complexity.Query.Properties(childComplexity), true
+		args, err := ec.field_Query_Properties_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Properties(childComplexity, args["postcode"].(string)), true
 
 	case "Query.totalArea":
 		if e.complexity.Query.TotalArea == nil {
@@ -372,7 +377,7 @@ type Query {
   totalTransaction: Int!
   totalPricePaidData: Int!
 
-  properties: [Property!]!
+  Properties(postcode: String!): [Property!]!
 }
 `, BuiltIn: false},
 }
@@ -381,6 +386,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Query_Properties_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["postcode"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postcode"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["postcode"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1096,7 +1116,7 @@ func (ec *executionContext) _Query_totalPricePaidData(ctx context.Context, field
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_properties(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_Properties(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1112,9 +1132,16 @@ func (ec *executionContext) _Query_properties(ctx context.Context, field graphql
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_Properties_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Properties(rctx)
+		return ec.resolvers.Query().Properties(rctx, args["postcode"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2753,7 +2780,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "properties":
+		case "Properties":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -2762,7 +2789,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_properties(ctx, field)
+				res = ec._Query_Properties(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

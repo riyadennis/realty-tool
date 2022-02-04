@@ -40,5 +40,5 @@ type Query {
   totalTransaction: Int!
   totalPricePaidData: Int!
 
-  properties: [Property!]!
+  Properties(postcode: String!): [Property!]!
 }

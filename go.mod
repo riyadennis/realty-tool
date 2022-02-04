@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/99designs/gqlgen v0.16.0
 	github.com/PuerkitoBio/goquery v1.8.0
+	github.com/ardanlabs/graphql v1.6.2
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/google/uuid v1.3.0
@@ -16,7 +17,6 @@ require (
 require (
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
-	github.com/ardanlabs/graphql v1.6.2 // indirect
 	github.com/containerd/containerd v1.5.9 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v20.10.12+incompatible // indirect

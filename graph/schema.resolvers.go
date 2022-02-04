@@ -12,7 +12,7 @@ import (
 )
 
 func (r *queryResolver) TotalProperties(ctx context.Context) (int, error) {
-	return totalProperty(ctx,r.Logger,  r.Store)
+	return totalProperty(ctx, r.Logger, r.Store)
 }
 
 func (r *queryResolver) TotalArea(ctx context.Context) (int, error) {
@@ -27,12 +27,8 @@ func (r *queryResolver) TotalPricePaidData(ctx context.Context) (int, error) {
 	return totalPricePaid(ctx, r.Logger, r.Store)
 }
 
-func (r *queryResolver) Properties(ctx context.Context) ([]*model.Property, error) {
-	return []*model.Property{
-		{
-			DoorNumber: "test",
-		},
-	}, nil
+func (r *queryResolver) Properties(ctx context.Context, postcode string) ([]*model.Property, error) {
+	return Properties(ctx, r.Logger, r.Store, postcode)
 }
 
 func (r *transactionResolver) TransactionDate(ctx context.Context, obj *model.Transaction) (string, error) {
