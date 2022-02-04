@@ -1,3 +1,5 @@
+scalar DateTime
+
 type PricePaidData {
   id: ID!
   DataSourceID: String!
@@ -5,9 +7,9 @@ type PricePaidData {
 }
 
 type Transaction{
-  TransactionDate: String
-  Price: String
-  Property: Property
+  TransactionDate: DateTime!
+  Price: String!
+  Property: Property!
 }
 
 type Property {
@@ -33,5 +35,10 @@ type Neighbourhood{
 }
 
 type Query {
+  totalProperties: Int!
+  totalArea: Int!
+  totalTransaction: Int!
+  totalPricePaidData: Int!
+
   properties: [Property!]!
 }

@@ -16,6 +16,7 @@ require (
 require (
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
+	github.com/ardanlabs/graphql v1.6.2 // indirect
 	github.com/containerd/containerd v1.5.9 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v20.10.12+incompatible // indirect

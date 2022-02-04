@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	defaultPort = "8080"
+	defaultPort = "8081"
 )
 
 func main() {
@@ -43,7 +43,12 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	store := graph.NewStore(logger, graph.NewGraphQL(&graph.GraphQLConfig{
+		URL: "http://localhost:8080",
+	}))
+
+	resolver := graph.NewResolver(store, logger)
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolver}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)

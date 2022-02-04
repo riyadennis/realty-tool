@@ -11,6 +11,22 @@ import (
 	"github.com/riyadennis/realty-tool/graph/model"
 )
 
+func (r *queryResolver) TotalProperties(ctx context.Context) (int, error) {
+	return totalProperty(ctx,r.Logger,  r.Store)
+}
+
+func (r *queryResolver) TotalArea(ctx context.Context) (int, error) {
+	return totalArea(ctx, r.Logger, r.Store)
+}
+
+func (r *queryResolver) TotalTransaction(ctx context.Context) (int, error) {
+	return totalTransaction(ctx, r.Logger, r.Store)
+}
+
+func (r *queryResolver) TotalPricePaidData(ctx context.Context) (int, error) {
+	return totalPricePaid(ctx, r.Logger, r.Store)
+}
+
 func (r *queryResolver) Properties(ctx context.Context) ([]*model.Property, error) {
 	return []*model.Property{
 		{
@@ -19,7 +35,7 @@ func (r *queryResolver) Properties(ctx context.Context) ([]*model.Property, erro
 	}, nil
 }
 
-func (r *transactionResolver) TransactionDate(ctx context.Context, obj *model.Transaction) (*string, error) {
+func (r *transactionResolver) TransactionDate(ctx context.Context, obj *model.Transaction) (string, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
