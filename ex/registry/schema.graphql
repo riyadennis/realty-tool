@@ -1,7 +1,7 @@
 type Property {
     id: ID!
     DoorNumber: String @search(by: [fulltext])
-    Postcode: String @search(by: [fulltext])
+    Postcode: String @search(by: [fulltext,term])
     Neighbourhood: Neighbourhood
     Area: Area
     PricePaidData: [PricePaidData]
@@ -25,11 +25,13 @@ type Area {
     District: String @search(by: [fulltext])
     County: String @search(by: [fulltext])
     OutCode: String
+    Properties: [Property] @hasInverse(field: Area)
 }
 
 type Neighbourhood{
     Street: String @search(by: [fulltext])
     Postcodes: [String] @search(by: [fulltext])
+    Properties: [Property] @hasInverse(field: Neighbourhood)
 }
 
 type Query {

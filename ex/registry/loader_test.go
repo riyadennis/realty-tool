@@ -6,18 +6,15 @@ import (
 )
 
 func TestAddressMutation(t *testing.T) {
-	addr := &Address{
+	addr := &Area{
 		ID:       "TEST",
-		PAON:     "12",
-		SAON:     "A",
-		Street:   "Dewberry",
 		Locality: "South WoodFord",
 		Town:     "London",
 		District: "London",
 		County:   "London",
 	}
 
-	mutation := AddressMutation(addr)
+	mutation := AreaMutation(addr)
 	if mutation == "" {
 		t.Fatalf("empty address mutation")
 	}

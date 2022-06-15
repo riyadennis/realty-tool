@@ -11,24 +11,21 @@ import (
 	"github.com/google/uuid"
 )
 
-
-
 type Loader struct {
-	Logger *log.Logger
+	Logger        *log.Logger
 	PricePaidData sync.Map
 	Property      sync.Map
-	Area       sync.Map
+	Area          sync.Map
 }
 
 func (l *Loader) LineToMutation(_ context.Context, _ chan error, record []string) chan string {
 	var (
 		subMutationChan = make(chan string, len(record))
-		ppd *PricePaidData
-		area *Area
-		subMutation string
-
+		ppd             *PricePaidData
+		area            *Area
+		subMutation     string
 	)
-	go func(){
+	go func() {
 
 		property, err := PropertyFromCSV(record)
 		if err != nil {
@@ -44,7 +41,7 @@ func (l *Loader) LineToMutation(_ context.Context, _ chan error, record []string
 				l.Logger.Fatalf("error creating uuid for ppd : %v", err)
 			}
 			ppd = &PricePaidData{
-				ID: ppdID.String(),
+				ID:           ppdID.String(),
 				DataSourceID: record[0],
 			}
 
@@ -52,7 +49,7 @@ func (l *Loader) LineToMutation(_ context.Context, _ chan error, record []string
 		_:%s <PricePaidData.DataSourceID> %q .
 		_:%s <dgraph.type> "PricePaidData" .
 	`,
-				ppd.ID,ppd.DataSourceID,
+				ppd.ID, ppd.DataSourceID,
 				ppd.ID)
 		}
 
@@ -61,10 +58,10 @@ func (l *Loader) LineToMutation(_ context.Context, _ chan error, record []string
 			l.Logger.Fatalf("error creating transaction date : %v", err)
 		}
 
-		transaction :=  &Transaction{
+		transaction := &Transaction{
 			TransactionDate: transactionDate,
-			Price: record[1],
-			Property: property,
+			Price:           record[1],
+			Property:        property,
 		}
 
 		//ppd.Transactions = append(ppd.Transactions,transaction)
@@ -83,25 +80,27 @@ func (l *Loader) LineToMutation(_ context.Context, _ chan error, record []string
 		)
 
 		dataArea, ok := l.Area.LoadOrStore(property.Area.OutCode, property.Area)
-		if ok && dataArea != nil{
+		if ok && dataArea != nil {
 			area, _ = dataArea.(*Area)
-		}else{
+		} else {
 			area = property.Area
 			subMutation += AreaMutation(area)
 		}
 
 		dataProperty, ok := l.Property.LoadOrStore(property.Postcode+property.DoorNumber+property.Neighbourhood.Street, property)
-		if ok && dataProperty != nil{
+		if ok && dataProperty != nil {
 			property, _ = dataProperty.(*Property)
-		}else{
+		} else {
 			subMutation += PropertyMutation(property)
 		}
 
 		subMutation += fmt.Sprintf(`
 	_:%s <Property.Area> _:%s .
+	_:%s <Area.Properties> _:%s .
 	_:%s <Property.PricePaidData> _:%s .
 	`,
 			property.ID, area.ID,
+			area.ID, property.ID,
 			property.ID, ppd.ID)
 
 		subMutationChan <- subMutation
@@ -137,44 +136,41 @@ func AreaMutation(area *Area) string {
 		area.ID)
 }
 
-
-func PropertyFromCSV( record []string) (*Property, error) {
+func PropertyFromCSV(record []string) (*Property, error) {
 	var (
 		postcode string
-		outcode string
+		outcode  string
 	)
 	ppdID, err := uuid.NewUUID()
 	if err != nil {
 		return nil, err
 	}
 
-
 	postcode = record[3]
 
-	if postcode != ""{
-		outCodeArr := strings.Split(postcode," ")
-		if (len(outCodeArr)) >0{
+	if postcode != "" {
+		outCodeArr := strings.Split(postcode, " ")
+		if (len(outCodeArr)) > 0 {
 			outcode = outCodeArr[0]
 		}
 	}
 
 	return &Property{
-		ID:               ppdID.String(),
-		DoorNumber:       record[7],
-		Postcode:        postcode,
+		ID:         ppdID.String(),
+		DoorNumber: record[7],
+		Postcode:   postcode,
 		Area: &Area{
 			ID:       "addr" + ppdID.String(),
 			Locality: record[10],
 			Town:     record[11],
 			District: record[12],
 			County:   record[13],
-			OutCode: outcode,
+			OutCode:  outcode,
 		},
 		Neighbourhood: &Neighbourhood{
 			Postcodes: []string{record[3]},
-			Street:   record[9],
+			Street:    record[9],
 		},
 	}, nil
-
 
 }
