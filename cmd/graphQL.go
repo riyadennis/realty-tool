@@ -1,17 +1,14 @@
 package main
 
 import (
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/golang-migrate/migrate/source/file"
 	"log"
 	"net/http"
 	"os"
-	"sync"
-
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/golang-migrate/migrate/source/file"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/riyadennis/realty-tool/ex/registry"
 	"github.com/riyadennis/realty-tool/graph"
 	"github.com/riyadennis/realty-tool/graph/generated"
 )
@@ -21,23 +18,7 @@ const (
 )
 
 func main() {
-	logger := log.New(os.Stdout, "LOADER: ", log.LstdFlags|log.Lmicroseconds|log.Lshortfile)
-
-	if os.Getenv("mode") == "load"{
-		loader := &registry.Loader{
-			Logger: logger,
-			PricePaidData: sync.Map{},
-			Property: sync.Map{},
-			Area: sync.Map{},
-		}
-		err := registry.LoadFromCSV(logger, "data/pp-2020.csv", "output.rdf", loader)
-		if err != nil {
-			logger.Fatalf("error loading CSV file to rdf: %v", err)
-		}
-	}
-
-
-
+	logger := log.New(os.Stdout, "graphQL: ", log.LstdFlags|log.Lmicroseconds|log.Lshortfile)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort

@@ -33,7 +33,6 @@ func NewStore(log *log.Logger, gql *graphql.GraphQL) *Store {
 	}
 }
 
-
 // NewGraphQL constructs a graphql value for use to access the databse.
 func NewGraphQL(gqlConfig *GraphQLConfig) *graphql.GraphQL {
 	client := http.Client{
@@ -42,7 +41,6 @@ func NewGraphQL(gqlConfig *GraphQLConfig) *graphql.GraphQL {
 			DialContext: (&net.Dialer{
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
-				DualStack: true,
 			}).DialContext,
 			ForceAttemptHTTP2:     true,
 			MaxIdleConns:          100,
@@ -60,4 +58,3 @@ func NewGraphQL(gqlConfig *GraphQLConfig) *graphql.GraphQL {
 
 	return graphql
 }
-

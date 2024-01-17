@@ -3,7 +3,7 @@ scalar DateTime
 type PricePaidData {
   id: ID!
   DataSourceID: String!
-  Transactions: [Transaction]
+  Transactions: [Transaction!]!
 }
 
 type Transaction{
@@ -18,7 +18,7 @@ type Property {
   Postcode: String
   Neighbourhood: Neighbourhood
   Area: Area
-  PricePaidData: [PricePaidData]
+  PricePaidData: [PricePaidData!]!
 }
 
 type Area {
